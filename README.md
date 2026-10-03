@@ -2,6 +2,21 @@
 
 Trong Day 17 này, các bạn sẽ tập trung vào một câu hỏi rất thực tế: làm sao để AI agent **không chỉ trả lời tốt trong một lượt chat**, mà còn **nhớ đúng thông tin quan trọng qua nhiều phiên làm việc** mà vẫn kiểm soát được chi phí token.
 
+## Trạng thái triển khai
+
+Dự án đã được hoàn thiện với hai đường chạy:
+
+- **Offline deterministic**: dùng cho test và benchmark, không cần API key.
+- **Live OpenAI**: dùng model cấu hình trong `.env`; đã kiểm tra API và persistent recall qua thread mới với `gpt-4o-mini`.
+
+Kết quả hiện tại:
+
+- `9/9` test pass, gồm test correction, nhiễu, compact và recall trên cả hai dataset.
+- Advanced đạt recall `1.000` trong cả benchmark chuẩn và stress test.
+- Ở stress test, Advanced xử lý `15.122` prompt-token so với `22.631` của Baseline và compact `6` lần.
+
+Chi tiết nằm trong [`RESULTS.md`](RESULTS.md).
+
 Trong bài lab này, các bạn sẽ xây dựng và so sánh hai agent:
 
 - `Baseline Agent`: chỉ có short-term memory trong cùng một thread
@@ -35,7 +50,10 @@ Sau khi hoàn thành, các bạn cần có khả năng:
 ├── data/            # dữ liệu benchmark dùng chung
 │   ├── conversations.json
 │   └── advanced_long_context.json
-└── src/             # bản scaffold dành cho sinh viên (pseudocode + TODO)
+├── requirements.txt # dependency tái lập cho môi trường OpenAI
+├── .env.example     # cấu hình mẫu, không chứa khóa thật
+├── RESULTS.md       # kết quả test, benchmark và phân tích
+└── src/             # phần triển khai hoàn chỉnh
     ├── model_provider.py
     ├── config.py
     ├── memory_store.py
@@ -49,7 +67,7 @@ Khi chạy, agent sẽ ghi trạng thái (ví dụ `state/profiles/<user>/User.m
 
 ### Vai trò từng file trong `src/`
 
-Các file được liệt kê theo thứ tự nên triển khai:
+Các file được liệt kê theo luồng phụ thuộc:
 
 | File | Vai trò | Thành phần chính |
 |---|---|---|
@@ -151,6 +169,8 @@ LLM_MODEL=gpt-4o-mini
 OPENAI_API_KEY=...
 ```
 
+Có thể bắt đầu nhanh bằng cách sao chép `.env.example` thành `.env`, sau đó điền khóa cục bộ. Tuyệt đối không commit `.env` hoặc đưa khóa thật vào tài liệu.
+
 ## Chạy benchmark và test
 
 Sau khi hoàn thiện `src/`, chạy từ root repo:
@@ -161,6 +181,14 @@ python src/benchmark.py
 
 ```bash
 pytest src/test_agents.py -v
+```
+
+Trên Windows có Python Launcher, có thể dùng:
+
+```powershell
+py -3 -m pip install -r requirements.txt
+py -3 -m pytest -v
+py -3 src\benchmark.py
 ```
 
 Benchmark cần in ra hai bảng: **Standard Benchmark** và **Long-Context Stress Benchmark**. Mỗi bảng so sánh Baseline với Advanced theo đủ 6 cột trong phần "Chỉ số benchmark cần hiểu".

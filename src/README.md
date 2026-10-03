@@ -1,19 +1,24 @@
-# Student Scaffold
+# Memory Agent Implementation
 
-This `src/` folder is the student version of the lab.
+The student scaffold is implemented with a deterministic offline path and
+optional live LangChain model construction.
 
-- It keeps the same high-level structure
-- The Python files are intentionally incomplete and contain pseudocode / TODOs
-- The benchmark structure should include: standard benchmark + long-context stress benchmark
-- The runtime should support these providers: `openai`, `custom`, `gemini`, `anthropic`, `ollama`, `openrouter`
+Main modules:
 
-Suggested flow:
+- `config.py`: environment, paths, model settings, and compact thresholds
+- `model_provider.py`: provider normalization and lazy model construction
+- `memory_store.py`: token estimation, `User.md`, fact extraction, and compaction
+- `agent_baseline.py`: thread-only memory
+- `agent_advanced.py`: persistent profile plus compact thread memory
+- `benchmark.py`: standard and long-context comparisons
+- `test_agents.py`: unit, behavior, correction, and dataset recall tests
 
-1. Start with `config.py`
-2. Implement `memory_store.py`
-3. Finish `agent_baseline.py`
-4. Finish `agent_advanced.py`
-5. Implement `benchmark.py`
-6. Make `test_agents.py` pass
+Run from the repository root:
 
-Datasets are available at the repo root in `data/`.
+```bash
+python src/benchmark.py
+pytest src/test_agents.py -v
+```
+
+No API key is required for tests or benchmarks. Live mode is selected only
+when a configured provider has credentials (or when Ollama is selected).
